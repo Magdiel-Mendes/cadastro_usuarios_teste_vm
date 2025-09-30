@@ -16,11 +16,11 @@ como e-mail e nome de usuário únicos.
 🔐 Validação de campos obrigatórios e únicos
 
 🛠️ Tecnologias utilizadas
-Java 17+
-Spring Boot
-Spring Data JPA
-Hibernate
-ModelMapper
-Bean Validation
-H2 
+Java 17+,
+Spring Boot,
+Spring Data JPA,
+Hibernate,
+ModelMapper,
+Bean Validation,
+H2,
 Maven
