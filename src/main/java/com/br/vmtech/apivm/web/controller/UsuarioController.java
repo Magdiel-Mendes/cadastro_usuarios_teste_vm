@@ -29,9 +29,36 @@ public class UsuarioController {
         return ResponseEntity.ok(mapper.toResponseList(usuarios));
     }
 
+    @GetMapping("{id}")
+    public ResponseEntity<UsuarioResponse> getById(@PathVariable Long id) {
+        Usuario usuario = usuarioService.buscarPorId(id);
+        return ResponseEntity.ok(mapper.toResponse(usuario));
+    }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<List<UsuarioResponse>> buscarPorNome(@RequestParam String nome) {
+        List<Usuario> usuarios = usuarioService.filtrarPorNome(nome);
+        List<UsuarioResponse> resposta = usuarios.stream()
+                .map(mapper::toResponse)
+                .toList();
+        return ResponseEntity.ok(resposta);
+    }
+
     @PostMapping
-    public ResponseEntity<UsuarioResponse> create(@Valid @RequestBody UsuarioRequest request) {
-        Usuario usuario  = usuarioService.salvar(mapper.toUsuario(request));
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponse(usuario));
+    public ResponseEntity<UsuarioResponse> create(@RequestBody UsuarioRequest request) {
+        Usuario salvo = usuarioService.salvar(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponse(salvo));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<String> atualizar(@PathVariable Long id, @RequestBody UsuarioRequest request) {
+        usuarioService.atualizar(id, request);
+        return ResponseEntity.status(HttpStatus.OK).body("Usuário atualizado com sucesso");
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        usuarioService.remove(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
