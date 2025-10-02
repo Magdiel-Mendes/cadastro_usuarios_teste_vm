@@ -27,8 +27,13 @@ public class UsuarioController {
     private final UsuarioMapper mapper;
 
     @GetMapping
-    public ResponseEntity<List<UsuarioResponse>> getAll(){
-        return ResponseEntity.ok(usuarioService.buscarTodos());
+    public ResponseEntity<PaginaUsuario<UsuarioResponse>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        PaginaUsuario<UsuarioResponse> resultado = usuarioService.buscarTodos(pageable);
+        return ResponseEntity.ok(resultado);
     }
 
     @GetMapping("/BuscarPorNome")

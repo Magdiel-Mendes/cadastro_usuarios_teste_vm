@@ -7,16 +7,21 @@ import com.br.vmtech.apivm.entity.Usuario;
 import com.br.vmtech.apivm.exceptions.NomeInvalidoException;
 import com.br.vmtech.apivm.exceptions.UsuarioValidoException;
 import com.br.vmtech.apivm.repository.UsuarioRepository;
+import com.br.vmtech.apivm.util.PaginaUsuario;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,28 +45,32 @@ class UsuarioServiceTest {
     private UsuarioService usuarioService;
 
     @Test
-    void deveBuscarTodosUsuarios() {
+    void deveListarUsuariosComPaginacao() {
+        Usuario usuario1 = new Usuario("Maria", "maria@email.com", "senha1");
+        Usuario usuario2 = new Usuario("João", "joao@email.com", "senha2");
 
-        Usuario usuario = new Usuario("João", "joao@email.com", "123");
-        UsuarioResponse response = new UsuarioResponse(1L, "João", "joao@email.com", "123");
+        UsuarioResponse response1 = new UsuarioResponse(1L, "Maria", "maria@email.com", "senha1");
+        UsuarioResponse response2 = new UsuarioResponse(2L, "João", "joao@email.com", "senha2");
 
-        List<Usuario> usuarios = List.of(usuario);
-        List<UsuarioResponse> responses = List.of(response);
+        Page<Usuario> paginaUsuarios = new PageImpl<>(List.of(usuario1, usuario2), PageRequest.of(0, 2), 2);
+        Pageable pageable = PageRequest.of(0, 2);
 
-        when(usuarioRepository.findAll()).thenReturn(usuarios);
-        when(mapper.toResponseList(usuarios)).thenReturn(responses);
+        when(usuarioRepository.findAll(pageable)).thenReturn(paginaUsuarios);
+        when(mapper.toResponse(usuario1)).thenReturn(response1);
+        when(mapper.toResponse(usuario2)).thenReturn(response2);
 
-        List<UsuarioResponse> resultado = usuarioService.buscarTodos();
+        PaginaUsuario<UsuarioResponse> resultado = usuarioService.buscarTodos(pageable);
 
-
-        assertNotNull(resultado);
-        assertEquals(1, resultado.size());
-
-        UsuarioResponse resultadoUsuario = resultado.get(0);
-        assertEquals("João", resultadoUsuario.getNome());
-        assertEquals("joao@email.com", resultadoUsuario.getEmail());
-        assertEquals("123", resultadoUsuario.getSenha());
+        assertEquals(2, resultado.getUsuarios().size());
+        assertEquals("Maria", resultado.getUsuarios().get(0).getNome());
+        assertEquals("senha1", resultado.getUsuarios().get(0).getSenha());
+        assertEquals("João", resultado.getUsuarios().get(1).getNome());
+        assertEquals("senha2", resultado.getUsuarios().get(1).getSenha());
+        assertEquals(0, resultado.getPaginaAtual());
+        assertEquals(1, resultado.getTotalPaginas());
+        assertEquals(2, resultado.getTotalElementos());
     }
+
 
 
     @Test

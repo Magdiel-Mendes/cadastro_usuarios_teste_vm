@@ -23,13 +23,20 @@ public class UsuarioControllerIT {
     WebTestClient testClient;
 
     @Test
-    void deveListarTodosUsuarios() {
+    void deveListarUsuariosComPaginacao() {
         testClient.get()
-                .uri("/api/v1/usuarios")
+                .uri(uriBuilder -> uriBuilder
+                        .path("/api/v1/usuarios")
+                        .queryParam("page", 0)
+                        .queryParam("size", 3)
+                        .build())
                 .exchange()
                 .expectStatus().isOk()
-                .expectBodyList(UsuarioResponse.class)
-                .hasSize(3);
+                .expectBody()
+                .jsonPath("$.usuarios.length()").isEqualTo(3)
+                .jsonPath("$.paginaAtual").isEqualTo(0)
+                .jsonPath("$.totalPaginas").isEqualTo(1)
+                .jsonPath("$.totalElementos").isEqualTo(3);
     }
 
     @Test

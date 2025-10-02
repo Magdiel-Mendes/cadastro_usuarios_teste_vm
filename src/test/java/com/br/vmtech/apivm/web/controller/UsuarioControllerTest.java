@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -34,28 +35,34 @@ class UsuarioControllerTest {
         @InjectMocks
         private UsuarioController usuarioController;
 
-        @Test
-        void deveRetornarTodosUsuariosComStatus200() {
-            List<UsuarioResponse> usuarios = List.of(
-                    new UsuarioResponse(1L, "bob", "bob@email.com", "123456"),
-                    new UsuarioResponse(2L, "jose", "jose@email.com", "123456")
-            );
+    @Test
+    void deveRetornarUsuariosPaginadosComStatus200() {
+        UsuarioResponse usuario1 = new UsuarioResponse(1L, "Bob", "bob@email.com", "123456");
+        UsuarioResponse usuario2 = new UsuarioResponse(2L, "José", "jose@email.com", "654321");
 
-            Mockito.when(usuarioService.buscarTodos()).thenReturn(usuarios);
+        List<UsuarioResponse> lista = List.of(usuario1, usuario2);
+        PaginaUsuario<UsuarioResponse> pagina = new PaginaUsuario<>(lista, 0, 1, 2);
 
-            ResponseEntity<List<UsuarioResponse>> response = usuarioController.getAll();
+        when(usuarioService.buscarTodos(PageRequest.of(0, 10))).thenReturn(pagina);
 
-            Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
-            Assertions.assertNotNull(response.getBody());
-            Assertions.assertEquals(2, response.getBody().size());
-            Assertions.assertEquals("bob", response.getBody().get(0).getNome());
-        }
+        ResponseEntity<PaginaUsuario<UsuarioResponse>> response = usuarioController.getAll(0, 10);
 
-        @Test
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(2, response.getBody().getUsuarios().size());
+        assertEquals("Bob", response.getBody().getUsuarios().get(0).getNome());
+        assertEquals(0, response.getBody().getPaginaAtual());
+        assertEquals(1, response.getBody().getTotalPaginas());
+        assertEquals(2, response.getBody().getTotalElementos());
+    }
+
+
+
+    @Test
         void deveBuscarUsuarioPorIdComStatus200() {
             UsuarioResponse usuario = new UsuarioResponse(1L, "bob", "bob@email.com", "123456");
 
-            Mockito.when(usuarioService.buscarPorId(1L)).thenReturn(usuario);
+            when(usuarioService.buscarPorId(1L)).thenReturn(usuario);
 
             ResponseEntity<UsuarioResponse> response = usuarioController.getById(1L);
 
@@ -71,7 +78,7 @@ class UsuarioControllerTest {
         Page<UsuarioResponse> page = new PageImpl<>(List.of(maria));
         Pageable pageable = PageRequest.of(0, 10, Sort.by("nome"));
 
-        Mockito.when(usuarioService.buscarPorNome("maria", pageable)).thenReturn(page);
+        when(usuarioService.buscarPorNome("maria", pageable)).thenReturn(page);
 
         // Act
         ResponseEntity<PaginaUsuario> response = usuarioController.getByNome("maria", 0, 10);
@@ -92,7 +99,7 @@ class UsuarioControllerTest {
             UsuarioRequest request = new UsuarioRequest("ana", "ana@email.com", "senha123");
             UsuarioResponse responseDto = new UsuarioResponse(4L, "ana", "ana@email.com", "senha123");
 
-            Mockito.when(usuarioService.salvar(request)).thenReturn(responseDto);
+            when(usuarioService.salvar(request)).thenReturn(responseDto);
 
             ResponseEntity<UsuarioResponse> response = usuarioController.create(request);
 
@@ -109,7 +116,7 @@ class UsuarioControllerTest {
         Usuario usuarioAtualizado = new Usuario("jose atualizado", "jose@email.com", "novaSenha");
 
         // Mock do retorno do service
-        Mockito.when(usuarioService.atualizar(id, request)).thenReturn(usuarioAtualizado);
+        when(usuarioService.atualizar(id, request)).thenReturn(usuarioAtualizado);
 
         // Act
         ResponseEntity<String> response = usuarioController.update(id, request);
@@ -119,9 +126,6 @@ class UsuarioControllerTest {
         Assertions.assertNotNull(response.getBody());
         Assertions.assertEquals("Usuário atualizado com sucesso", response.getBody());
     }
-
-
-
 
 
     @Test

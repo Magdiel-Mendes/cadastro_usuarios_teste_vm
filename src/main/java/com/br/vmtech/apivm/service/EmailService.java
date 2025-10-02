@@ -13,5 +13,4 @@ public class EmailService{
         public void enviarEmailAtualizacao(Usuario usuario) {
             System.out.printf("Dados atualizados para %s (%s)%n", usuario.getNome(), usuario.getEmail());
         }
-
 }

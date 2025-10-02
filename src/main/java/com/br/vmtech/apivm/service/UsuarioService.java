@@ -7,6 +7,7 @@ import com.br.vmtech.apivm.repository.UsuarioRepository;
 import com.br.vmtech.apivm.dto.UsuarioRequest;
 import com.br.vmtech.apivm.dto.UsuarioResponse;
 import com.br.vmtech.apivm.dto.mapper.UsuarioMapper;
+import com.br.vmtech.apivm.util.PaginaUsuario;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,9 +26,10 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
 
     @Transactional(readOnly = true)
-    public List<UsuarioResponse> buscarTodos(){
-        List<Usuario> usuarios = usuarioRepository.findAll();
-        return mapper.toResponseList(usuarios);
+    public PaginaUsuario<UsuarioResponse> buscarTodos(Pageable pageable) {
+        Page<Usuario> usuarios = usuarioRepository.findAll(pageable);
+        Page<UsuarioResponse> paginaResponse = usuarios.map(mapper::toResponse);
+        return new PaginaUsuario<>(paginaResponse);
     }
 
     @Transactional(readOnly = true)
