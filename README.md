@@ -53,7 +53,7 @@ Hibernate — provedor JPA padrão usado por trás do Spring Data
 
 Spring Web — para construção de APIs RESTful
 
-Spring WebFlux — suporte reativo (caso use WebTestClient nos testes)
+Spring WebFlux — suporte reativo (caso de uso TestClient nos testes)
 
 Bean Validation (JSR-380) — validação de dados com anotações como @NotNull, @Email, etc.
 
