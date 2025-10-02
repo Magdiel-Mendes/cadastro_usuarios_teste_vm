@@ -1,20 +1,21 @@
-package com.br.vmtech.apivm.web.dto.mapper;
+package com.br.vmtech.apivm.dto.mapper;
 
 import com.br.vmtech.apivm.entity.Usuario;
-import com.br.vmtech.apivm.web.dto.UsuarioRequest;
-import com.br.vmtech.apivm.web.dto.UsuarioResponse;
+import com.br.vmtech.apivm.dto.UsuarioRequest;
+import com.br.vmtech.apivm.dto.UsuarioResponse;
+import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@AllArgsConstructor
 @Component
 public class UsuarioMapper {
 
-    @Autowired
-    private ModelMapper mapper;
+
+    private final ModelMapper mapper;
 
     public Usuario toUsuario(UsuarioRequest request){
         return mapper.map(request, Usuario.class);

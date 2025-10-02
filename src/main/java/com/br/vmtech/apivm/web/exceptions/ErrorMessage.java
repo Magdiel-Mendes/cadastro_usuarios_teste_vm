@@ -4,34 +4,37 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 
-import java.util.HashMap;
+import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorMessage {
 
     private int status;
-    private String message;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String mensagem;
+    private String path;
+    private LocalDateTime timestamp;
     private Map<String, String> errors;
 
-    public ErrorMessage(HttpStatus status, String message) {
+    public ErrorMessage(HttpStatus status, String mensagem, String path) {
         this.status = status.value();
-        this.message = message;
+        this.mensagem = mensagem;
+        this.path = path;
+        this.timestamp = LocalDateTime.now();
     }
 
-    public ErrorMessage(HttpStatus status, String message, BindingResult result) {
-        this.status = status.value();
-        this.message = message;
-        addErrors(result);
-    }
-
-    private void addErrors(BindingResult result) {
-        errors = new HashMap<>();
-        result.getFieldErrors().forEach(error ->
-                errors.put(error.getField(), error.getDefaultMessage())
-        );
+    public ErrorMessage(HttpStatus status, String mensagem, String path, BindingResult result) {
+        this(status, mensagem, path);
+        this.errors = result.getFieldErrors().stream()
+                .collect(Collectors.toMap(
+                        FieldError::getField,
+                        error -> Objects.requireNonNullElse(error.getDefaultMessage(), "Mensagem não disponível")
+                ));
     }
 }
+

@@ -1,57 +1,60 @@
 package com.br.vmtech.apivm.web.controller;
 
-import com.br.vmtech.apivm.entity.Usuario;
 import com.br.vmtech.apivm.service.UsuarioService;
-import com.br.vmtech.apivm.web.dto.UsuarioRequest;
-import com.br.vmtech.apivm.web.dto.UsuarioResponse;
-import com.br.vmtech.apivm.web.dto.mapper.UsuarioMapper;
+import com.br.vmtech.apivm.util.PaginaUsuario;
+import com.br.vmtech.apivm.dto.UsuarioRequest;
+import com.br.vmtech.apivm.dto.UsuarioResponse;
+import com.br.vmtech.apivm.dto.mapper.UsuarioMapper;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("api/v1/usuarios")
 public class UsuarioController {
 
-    @Autowired
-    private UsuarioService usuarioService;
+    private final UsuarioService usuarioService;
 
-    @Autowired
-    private UsuarioMapper mapper;
+    private final UsuarioMapper mapper;
 
     @GetMapping
-    public ResponseEntity<List<UsuarioResponse>> getAll() {
-        List<Usuario> usuarios = usuarioService.buscarTodos();
-        return ResponseEntity.ok(mapper.toResponseList(usuarios));
+    public ResponseEntity<List<UsuarioResponse>> getAll(){
+        return ResponseEntity.ok(usuarioService.buscarTodos());
+    }
+
+    @GetMapping("/BuscarPorNome")
+    public ResponseEntity<PaginaUsuario> getByNome(
+            @RequestParam(required = false) String nome,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("nome"));
+        Page<UsuarioResponse> resultado = usuarioService.buscarPorNome(nome, pageable);
+        return ResponseEntity.ok(new PaginaUsuario(resultado));
     }
 
     @GetMapping("{id}")
     public ResponseEntity<UsuarioResponse> getById(@PathVariable Long id) {
-        Usuario usuario = usuarioService.buscarPorId(id);
-        return ResponseEntity.ok(mapper.toResponse(usuario));
-    }
-
-    @GetMapping("/buscar")
-    public ResponseEntity<List<UsuarioResponse>> buscarPorNome(@RequestParam String nome) {
-        List<Usuario> usuarios = usuarioService.filtrarPorNome(nome);
-        List<UsuarioResponse> resposta = usuarios.stream()
-                .map(mapper::toResponse)
-                .toList();
-        return ResponseEntity.ok(resposta);
+        return ResponseEntity.ok(usuarioService.buscarPorId(id));
     }
 
     @PostMapping
-    public ResponseEntity<UsuarioResponse> create(@RequestBody UsuarioRequest request) {
-        Usuario salvo = usuarioService.salvar(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponse(salvo));
+    public ResponseEntity<UsuarioResponse> create(@Valid @RequestBody UsuarioRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.salvar(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<String> atualizar(@PathVariable Long id, @RequestBody UsuarioRequest request) {
+    public ResponseEntity<String> update(@PathVariable Long id,
+                                         @Valid @RequestBody UsuarioRequest request) {
         usuarioService.atualizar(id, request);
         return ResponseEntity.status(HttpStatus.OK).body("Usuário atualizado com sucesso");
     }

@@ -1,56 +1,66 @@
 package com.br.vmtech.apivm.service;
 
 import com.br.vmtech.apivm.entity.Usuario;
-import com.br.vmtech.apivm.exceptions.UsernameUniqueViolationException;
+import com.br.vmtech.apivm.exceptions.NomeInvalidoException;
+import com.br.vmtech.apivm.exceptions.UsuarioValidoException;
 import com.br.vmtech.apivm.repository.UsuarioRepository;
-import com.br.vmtech.apivm.web.dto.UsuarioRequest;
-import com.br.vmtech.apivm.web.dto.mapper.UsuarioMapper;
+import com.br.vmtech.apivm.dto.UsuarioRequest;
+import com.br.vmtech.apivm.dto.UsuarioResponse;
+import com.br.vmtech.apivm.dto.mapper.UsuarioMapper;
 import jakarta.persistence.EntityNotFoundException;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
+import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class UsuarioService {
 
-    @Autowired
-    public UsuarioMapper mapper;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioMapper mapper;
+    private final EmailService emailService;
+    private final UsuarioRepository usuarioRepository;
 
     @Transactional(readOnly = true)
-    public List<Usuario> buscarTodos() {
-        return usuarioRepository.findAll();
+    public List<UsuarioResponse> buscarTodos(){
+        List<Usuario> usuarios = usuarioRepository.findAll();
+        return mapper.toResponseList(usuarios);
     }
 
-
     @Transactional(readOnly = true)
-    public Usuario buscarPorId(Long id) {
-        return usuarioRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException(String.format("Usuário id=%s não encontrado", id))
+    public UsuarioResponse buscarPorId(Long id) {
+
+      Usuario usuario = usuarioRepository.findById(id).orElseThrow(
+                () -> new EntityNotFoundException(String.format("Usuário id = %s não encontrado", id))
         );
+       return mapper.toResponse(usuario);
     }
 
     @Transactional(readOnly = true)
-    public List<Usuario> filtrarPorNome(String nome) {
-        return usuarioRepository.buscarPorNome(nome);
+    public Page<UsuarioResponse> buscarPorNome(String nome, Pageable pageable) {
+        if (nome == null || nome.isBlank()) {
+            throw new NomeInvalidoException("O nome para busca não pode estar vazio");
+        }
+
+        return usuarioRepository.buscarPorNome(nome, pageable)
+                .map(mapper::toResponse);
     }
 
     @Transactional
-    public Usuario salvar(UsuarioRequest request) {
-        Usuario usuario = mapper.toUsuario(request);
-        try {
-            return usuarioRepository.save(usuario);
-        } catch (DataIntegrityViolationException ex) {
-            throw new UsernameUniqueViolationException(
-                    String.format("Usuário '%s' já cadastrado", usuario.getNome())
+    public UsuarioResponse salvar(UsuarioRequest request) {
+
+        if (usuarioRepository.existsByEmail(request.getEmail())) {
+            throw new UsuarioValidoException(
+                    String.format("E-mail '%s' já está cadastrado", request.getEmail())
             );
         }
+            Usuario usuario = mapper.toUsuario(request);
+            Usuario novoUsuario = usuarioRepository.save(usuario);
+            emailService.enviarEmailCadastro(usuario);
+            return mapper.toResponse(novoUsuario);
     }
 
     @Transactional
@@ -62,6 +72,7 @@ public class UsuarioService {
         if (request.getEmail() != null) { usuario.setEmail(request.getEmail()); }
         if (request.getSenha() != null) { usuario.setSenha(request.getSenha()); }
 
+        emailService.enviarEmailAtualizacao(usuario);
         return usuarioRepository.save(usuario);
     }
 
@@ -70,9 +81,8 @@ public class UsuarioService {
 
             Usuario usuario = usuarioRepository.findById(id)
                     .orElseThrow(() -> new EntityNotFoundException(
-                            String.format("Usuário id=%s não encontrado", id)
+                            String.format("Usuário id = %s não encontrado", id)
                     ));
-
             usuarioRepository.delete(usuario);
     }
 }
