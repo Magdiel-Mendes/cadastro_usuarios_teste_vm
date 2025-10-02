@@ -42,6 +42,7 @@ Teste de integração: Teste de integração verifica o comportamento real da AP
 Esses testes foram escolhidos por representarem pontos críticos da aplicação.
 
 🛠️ Tecnologias Utilizadas
+
 Java 17+ — linguagem principal do projeto
 
 Spring Boot — framework para criação de aplicações Java modernas
