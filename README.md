@@ -20,7 +20,7 @@ como e-mail e nome de usuário únicos.
 
 📄 Buscar usuários com paginação e filtro por nome GET /api/v1/usuarios/BuscarPorNome?nome={nome}&page={page}&size={size} Exemplo: GET /api/v1/usuarios/BuscarPorNome?nome=maria&page=0&size=1
 
-Sugestão de melhoria back-end: Considere integrar o Swagger para documentar e testar a API de forma interativa e eficiente. 
+Sugestão de melhoria backend: Considere integrar o Swagger para documentar e testar a API de forma interativa e eficiente. 
 
 🔐 Validação de campos obrigatórios e únicos
 
@@ -78,6 +78,6 @@ ANGULAR 2+
 
 Angular é um framework moderno para desenvolvimento de interfaces web dinâmicas e escaláveis onde podemos criar uma aplicação front-end rica, responsiva e organizada, utilizando componentes reutilizáveis, integração nativa com APIs REST e ter o uso nativo de TypeScript.
 
-Ao conectar o Angular a nossa API Spring Boot recém-criada, podemos separa claramente o backend da interface, permitindo que cada parte evolua de forma independente. Isso facilita a manutenção, melhora a experiência do usuário e abre espaço para recursos avançados como autenticação JWT, formulários reativos, paginação visual e dashboards interativos.
+Ao conectar o Angular a nossa API Spring Boot recém-criada, podemos separar claramente o backend da interface, permitindo que cada parte evolua de forma independente. Isso facilita a manutenção, melhora a experiência do usuário e abre espaço para recursos avançados como autenticação JWT, formulários reativos, paginação visual e dashboards interativos.
 
 Segue uma collection no Postman para facilitar a realização de testes nos endpoints da API de forma prática e estruturada.
