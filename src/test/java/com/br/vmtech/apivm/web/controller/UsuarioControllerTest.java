@@ -80,10 +80,8 @@ class UsuarioControllerTest {
 
         when(usuarioService.buscarPorNome("maria", pageable)).thenReturn(page);
 
-        // Act
         ResponseEntity<PaginaUsuario> response = usuarioController.getByNome("maria", 0, 10);
 
-        // Assert
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertNotNull(response.getBody());
         Assertions.assertFalse(response.getBody().getUsuarios().isEmpty());
@@ -115,13 +113,12 @@ class UsuarioControllerTest {
         UsuarioRequest request = new UsuarioRequest("jose atualizado", "jose@email.com", "novaSenha");
         Usuario usuarioAtualizado = new Usuario("jose atualizado", "jose@email.com", "novaSenha");
 
-        // Mock do retorno do service
+
         when(usuarioService.atualizar(id, request)).thenReturn(usuarioAtualizado);
 
-        // Act
+
         ResponseEntity<String> response = usuarioController.update(id, request);
 
-        // Assert
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertNotNull(response.getBody());
         Assertions.assertEquals("Usuário atualizado com sucesso", response.getBody());

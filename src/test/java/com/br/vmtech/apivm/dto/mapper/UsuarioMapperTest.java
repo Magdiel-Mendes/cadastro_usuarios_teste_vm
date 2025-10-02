@@ -49,7 +49,7 @@ class UsuarioMapperTest {
 
     @Test
     void deveMapearListaDeUsuariosParaListaDeUsuarioResponse() {
-        // Arrange
+
         Usuario u1 = new Usuario("maria", "maria@email.com", "123");
         u1.setId(1L);
         Usuario u2 = new Usuario("carlos", "carlos@email.com", "456");
